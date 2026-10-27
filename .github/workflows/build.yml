@@ -1,3 +1,4 @@
+
 name: Build addon
 
 on:
@@ -7,26 +8,35 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
 
-      - uses: actions/setup-java@v4
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '21'
 
-      - uses: gradle/actions/setup-gradle@v4
+      - name: Unpack project
+        run: |
+          test -f xbowcart-addon-project.zip
+          unzip -q xbowcart-addon-project.zip -d project
+          ls -la project
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '9.2.1'
-
-      - name: Unpack project
-        run: unzip -q xbowcart-addon-project.zip -d project
 
       - name: Build
         working-directory: project
         run: gradle build --no-daemon
 
-      - uses: actions/upload-artifact@v4
+      - name: Upload JAR
+        uses: actions/upload-artifact@v4
         with:
           name: xbowcart-addon
           path: project/build/libs/*.jar
+          if-no-files-found: error
